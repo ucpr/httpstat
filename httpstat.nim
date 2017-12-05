@@ -1,3 +1,4 @@
+import terminal
 import strutils, pegs, unicode
 
 const
@@ -20,3 +21,17 @@ const
                                         starttransfer:$7          |
                                                                    total:$8
   """
+
+
+proc make_color(code: int): proc =
+  proc color_func(s: string): string =
+    if not isatty(stdout):  # https://nim-lang.org/docs/terminal.html
+      return s
+    var tpl: string = "\x1b[$1m$2\x1b[0m"
+
+    return tpl % [$code, s]
+  return color_func
+
+
+if isMainModule:
+  echo make_color(32)("okinawa")
