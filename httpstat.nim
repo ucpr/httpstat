@@ -112,6 +112,22 @@ proc main(): int =
     echo "httpstat $1" % [VERSION]
     quit(0)
 
+  # https://nim-lang.org/docs/future.html
+  # py: [argv[i] for i in range(1, paramCount())]
+  var curl_args = lc[argv[x] | (x <- 1..(paramCount() - 1)), string]
+
+  # check curl args
+  var exclude_options = @[
+    "-w", "--write-out",
+    "-D", "--dump-header",
+    "-o", "--output",
+    "-s", "--silent"
+  ]
+  for i in exclude_options:
+    if i in curl_args:
+      echo yellow("Error: $1 is not allowed in extra curl args" % [i])
+      quit(1)
+
 
 if isMainModule:
   #echo make_color(32)("okinawa")
