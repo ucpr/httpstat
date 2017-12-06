@@ -1,9 +1,10 @@
-import future
 import tables
-import terminal, system
+import random, future
+import terminal, times, system
 import os, ospaths
 import strutils, pegs, unicode
 
+randomize()
 
 const VERSION = "0.0.1"
 const
@@ -72,6 +73,12 @@ proc echo_help(): int {. discardable .} =
   """
   echo help
 
+proc random_str(size: int): string =
+  let words = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  result = ""  # return result
+  for i in countup(0, size):
+    result &= words[random(61)]  # len(words) == 62
+
 proc make_color(code: string): proc =
   proc color_func(s: string): string =
     if not isatty(stdout):  # https://nim-lang.org/docs/terminal.html
@@ -128,8 +135,12 @@ proc main(): int =
       echo yellow("Error: $1 is not allowed in extra curl args" % [i])
       quit(1)
 
+  let
+    bodyf = "/tmp/httpstatbody-" & getDateStr() & random_str() & getClockStr()
+    headerf = "/tmp/httpstatheader-" & getDateStr() & random_str() &  getClockStr()
 
 if isMainModule:
   #echo make_color(32)("okinawa")
   #echo_help()
-  discard main()
+  #discard main()
+  echo random_str(8)
