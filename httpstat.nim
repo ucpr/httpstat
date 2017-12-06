@@ -5,6 +5,7 @@ import os, ospaths
 import strutils, pegs, unicode
 
 
+const VERSION = "0.0.1"
 const
   HTTPS_TEMPLATE = """
     DNS Lookup   TCP Connection   TLS Handshake   Server Processing   Content Transfer
@@ -54,7 +55,7 @@ proc echo_help(): int {. discardable .} =
     CURL_OPTIONS  any curl supported options, except for -w -D -o -S -s,
                   which are already used internally.
     -h --help     show this screen.
-    --version     show version.
+    -v --version     show version.
   Environments:
     HTTPSTAT_SHOW_BODY    Set to `true` to show response body in the output,
                           note that body length is limited to 1023 bytes, will be
@@ -80,6 +81,10 @@ proc make_color(code: string): proc =
     return tpl % [code, s]
   return color_func
 
+proc grayscale(i: int, s: string): string =
+  var code: int = 232 + i
+  return  make_color("38;5;" & $code)(s)
+
 let
   red = make_color("31")
   green = make_color("32")
@@ -91,20 +96,21 @@ let
   bold = make_color("1")
   underline = make_color("4")
 
-  #grayscale = lc[make_color("38;5;" & $x) | (x <- 232..256)]
-
-
-proc exit(s: string, code: int = 0): int {. discardable .} =
-  if s != "":
-    echo s
-  quit(code)
 
 proc main(): int =
   if paramCount() == 0:
     echo_help()
-    exit("hoge", 1)
+    quit(0)
 
   var argv: seq[string] = commandLineParams()
+
+  var url: string = argv[0]
+  if url in ["-h", "--help"]:
+    echo_help()
+    quit(0)
+  elif url in ["-v", "--version"]:
+    echo "httpstat $1" % [VERSION]
+    quit(0)
 
 
 if isMainModule:
