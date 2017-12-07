@@ -1,7 +1,7 @@
 import tables
 import random, future
-import terminal, times, system
-import os, ospaths
+import terminal, times
+import os, ospaths, posix
 import strutils, pegs, unicode
 
 randomize()
@@ -136,11 +136,16 @@ proc main(): int =
       quit(1)
 
   let
-    bodyf = "/tmp/httpstatbody-" & getDateStr() & random_str() & getClockStr()
-    headerf = "/tmp/httpstatheader-" & getDateStr() & random_str() &  getClockStr()
+    bodyf = "/tmp/httpstatbody-" & getDateStr() & random_str(8) & getClockStr()
+    headerf = "/tmp/httpstatheader-" & getDateStr() & random_str(8) &  getClockStr()
 
+  # https://www.tutorialspoint.com/c_standard_library/c_function_setlocale.htm
+  # https://nim-lang.org/docs/posix.html
+  discard setlocale(LC_ALL, "C")
+
+  
 if isMainModule:
   #echo make_color(32)("okinawa")
   #echo_help()
-  #discard main()
+  discard main()
   echo random_str(8)
