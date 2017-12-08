@@ -3,6 +3,7 @@ import random, future
 import terminal, times
 import os, ospaths, osproc, posix
 import strutils, pegs, unicode
+import sequtils
 
 randomize()
 
@@ -144,11 +145,21 @@ proc main(): int =
   discard setlocale(LC_ALL, "C")
   let curl_bin = "curl"
   let 
-    cmd_core = @[curl_bin, "-w", curl_format, "-D", headerf, "-o", bodyf, "-s", "-S"].join(" ")
-    cmd = cmd_core & " " & curl_args & " " & url
+    cmd_core = @[curl_bin, "-w", curl_format, "-D", headerf, "-o", bodyf, "-s", "-S"]
+    cmd = concat(cmd_core, @[curl_args, url])
 
-  let output = execCmdEx(cmd)
-  echo output
+  let p = execCmdEx(cmd.join(" "))  # tuple[output, exitCode]
+  
+  # print stderr
+  if p.exitCode != 0:
+    var msg = cmd
+    msg[2] = "<output-format>"
+    msg[4] = "<tempfile>"
+    msg[6] = "<tempfile>"
+    echo "> $1" % [msg.join(" ")]
+    echo yellow("curl error: $1" % [p.output.split("\n")[0]])
+    quit(p.exitCode)
+
   
 if isMainModule:
   #echo make_color(32)("okinawa")
