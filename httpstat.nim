@@ -1,4 +1,4 @@
-import tables
+import tables, json
 import random, future
 import terminal, times
 import os, ospaths, osproc, posix
@@ -159,6 +159,18 @@ proc main(): int =
     echo "> $1" % [msg.join(" ")]
     echo yellow("curl error: $1" % [p.output.split("\n")[0]])
     quit(p.exitCode)
+
+  # parse output(json)
+  let p_json: JsonNode = parseJson(p.output)
+  
+  var d = initTable[string, string]()
+  for key, value in p_json:
+    if startsWith(key, "time_"):
+      d[key] = $int(p_json[key].getFNum() * 1000)
+    else:
+      d[key] = $value
+
+  echo d
 
   
 if isMainModule:
