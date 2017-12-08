@@ -143,7 +143,7 @@ proc main(): int =
   # https://www.tutorialspoint.com/c_standard_library/c_function_setlocale.htm
   # https://nim-lang.org/docs/posix.html
   discard setlocale(LC_ALL, "C")
-  let curl_bin = "curl"
+  let curl_bin = "curl"  # test
   let 
     cmd_core = @[curl_bin, "-w", curl_format, "-D", headerf, "-o", bodyf, "-s", "-S"]
     cmd = concat(cmd_core, @[curl_args, url])
@@ -178,7 +178,7 @@ proc main(): int =
   d["range_transfer"] = $(d["time_total"].parseInt() - d["time_starttransfer"].parseInt())
 
   # ip
-  let show_ip = true
+  let show_ip = true  # test
   if show_ip:
     let s = "Connected to $1:$2 from $3:$4" % [
       cyan(d["remote_ip"]), cyan(d["remote_port"]),
@@ -187,23 +187,51 @@ proc main(): int =
     echo s, "\n"
 
   # print header & body summary
-  block header:
-    var f: File = open(headerf, FileMode.fmRead)
+  block header_block:
+    let f: File = open(headerf, FileMode.fmRead)
     defer:
       f.close()
-      removeFile(headerf)  # remove header file
+      removeFile(headerf)  # remove header tmp file
 
     var loop: int = 0
     while f.endOfFile == false:
       if loop == 0:
-        let res = f.readLine().split("/")
-        echo green(res[0]) & grayscale(14, "/") & cyan(res[1])
+        let header = f.readLine().split("/")
+        echo green(header[0]) & grayscale(14, "/") & cyan(header[1])
         inc(loop)
       else:
         let 
-          res = f.readLine()
-          pos = res.find(":")
-        echo grayscale(14, res[0..pos]) & cyan(res[(pos + 1)..len(res)])
+          header = f.readLine()
+          pos = header.find(":")
+        echo grayscale(14, header[0..pos]) & cyan(header[(pos + 1)..len(header)])
+
+  let  # test
+    show_body = true
+    save_body = false
+  block body_block:
+    if not show_body:
+      if save_body:
+        echo "$1 stored in: $2" % [green("Body"), bodyf]
+      break body_block
+
+    const body_limit = 1024
+    let f: File = open(bodyf, FileMode.fmRead)
+    defer:
+      f.close()
+      if not save_body:
+        removeFile(bodyf)  # remove body tmp file
+    
+    let
+      body = f.readAll()
+      body_len = len(body)
+    if body_len > body_limit:
+      echo body[0..(body_limit - 1)] & cyan("..."), "\n"
+      var s = "$1 is truncated ($2 out of $3)" % [green("Body"), $body_limit, $body_len]
+      if save_body:
+        s.add(", stored in: {}" % [bodyf])
+      echo s
+    else:
+      echo body
 
 
 if isMainModule:
