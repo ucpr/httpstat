@@ -1,7 +1,7 @@
 import tables
 import random, future
 import terminal, times
-import os, ospaths, posix
+import os, ospaths, osproc, posix
 import strutils, pegs, unicode
 
 randomize()
@@ -28,7 +28,7 @@ const
                                                                    total:$8
   """
 
-const curl_format = """{
+const curl_format = """'{
   "time_namelookup": %{time_namelookup},
   "time_connect": %{time_connect},
   "time_appconnect": %{time_appconnect},
@@ -42,7 +42,7 @@ const curl_format = """{
   "remote_port": "%{remote_port}",
   "local_ip": "%{local_ip}",
   "local_port": "%{local_port}"
-}"""
+}'"""
 
 
 proc echo_help(): int {. discardable .} =
@@ -111,7 +111,7 @@ proc main(): int =
 
   var argv: seq[string] = commandLineParams()
 
-  var url: string = argv[0]
+  let url = argv[0]
   if url in ["-h", "--help"]:
     echo_help()
     quit(0)
@@ -121,7 +121,7 @@ proc main(): int =
 
   # https://nim-lang.org/docs/future.html
   # py: [argv[i] for i in range(1, paramCount())]
-  var curl_args = lc[argv[x] | (x <- 1..(paramCount() - 1)), string]
+  let curl_args = lc[argv[x] | (x <- 1..(paramCount() - 1)), string].join(" ")
 
   # check curl args
   var exclude_options = @[
@@ -142,10 +142,15 @@ proc main(): int =
   # https://www.tutorialspoint.com/c_standard_library/c_function_setlocale.htm
   # https://nim-lang.org/docs/posix.html
   discard setlocale(LC_ALL, "C")
+  let curl_bin = "curl"
+  let 
+    cmd_core = @[curl_bin, "-w", curl_format, "-D", headerf, "-o", bodyf, "-s", "-S"].join(" ")
+    cmd = cmd_core & " " & curl_args & " " & url
 
+  let output = execCmdEx(cmd)
+  echo output
   
 if isMainModule:
   #echo make_color(32)("okinawa")
   #echo_help()
   discard main()
-  echo random_str(8)
