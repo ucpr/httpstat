@@ -170,8 +170,21 @@ proc main(): int =
     else:
       d[key] = $value
 
-  echo d
+  # calculate ranges
+  d["range_dns"] = $d["time_namelookup"].parseInt()
+  d["range_connection"] = $(d["time_connect"].parseInt() - d["time_namelookup"].parseInt())
+  d["range_ssl"] = $(d["time_pretransfer"].parseInt() - d["time_connect"].parseInt())
+  d["range_server"] = $(d["time_starttransfer"].parseInt() - d["time_pretransfer"].parseInt())
+  d["range_transfer"] = $(d["time_total"].parseInt() - d["time_starttransfer"].parseInt())
 
+  # ip
+  let show_ip = true
+  if show_ip:
+    let s = "Connected to $1:$2 from $3:$4" % [
+      cyan(d["remote_ip"]), cyan(d["remote_port"]),
+      cyan(d["local_ip"]), cyan(d["local_port"]),
+    ]
+    echo s, "\n"
   
 if isMainModule:
   #echo make_color(32)("okinawa")
