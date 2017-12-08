@@ -185,7 +185,27 @@ proc main(): int =
       cyan(d["local_ip"]), cyan(d["local_port"]),
     ]
     echo s, "\n"
-  
+
+  # print header & body summary
+  block header:
+    var f: File = open(headerf, FileMode.fmRead)
+    defer:
+      f.close()
+      removeFile(headerf)  # remove header file
+
+    var loop: int = 0
+    while f.endOfFile == false:
+      if loop == 0:
+        let res = f.readLine().split("/")
+        echo green(res[0]) & grayscale(14, "/") & cyan(res[1])
+        inc(loop)
+      else:
+        let 
+          res = f.readLine()
+          pos = res.find(":")
+        echo grayscale(14, res[0..pos]) & cyan(res[(pos + 1)..len(res)])
+
+
 if isMainModule:
   #echo make_color(32)("okinawa")
   #echo_help()
