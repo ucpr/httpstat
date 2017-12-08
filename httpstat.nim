@@ -11,22 +11,22 @@ const VERSION = "0.0.1"
 const
   HTTPS_TEMPLATE = """
     DNS Lookup   TCP Connection   TLS Handshake   Server Processing   Content Transfer
-  [  $1  |    $2    |   $3    |     $4      |     $5     ]
-              |               |              |                  |                 |
-     namelookup:$6       |              |                  |                 |
-                      connect:$7        |                  |                 |
-                                    pretransfer:$8         |                 |
-                                                     starttransfer:$9        |
-                                                                           total:$10
+  [  $1   |    $2     |    $3    |      $4      |     $5     ]
+               |                |               |                   |                 |
+     namelookup:$6         |               |                   |                 |
+                         connect:$7        |                   |                 |
+                                     pretransfer:$8            |                 |
+                                                       starttransfer:$9          |
+                                                                                 total:$10
   """
   HTTP_TEMPLATE = """
     DNS Lookup   TCP Connection   Server Processing   Content Transfer
-  [  $1  |    $2    |     $3      |     $4     ]
+  [  $1   |   $2      |     $4       |     $5      ]
                |                |                   |                  |
-      namelookup:$5        |                   |                  |
-                          connect:$6           |                  |
-                                        starttransfer:$7          |
-                                                                   total:$8
+     namelookup:$6         |                   |                  |
+                         connect:$7            |                  |
+                                       starttransfer:$9           |
+                                                                  total:$10
   """
 
 const curl_format = """'{
