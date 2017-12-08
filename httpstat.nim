@@ -70,7 +70,6 @@ proc echo_help(): int {. discardable .} =
                           set to `false` to disable this feature. Default is `true`
     HTTPSTAT_CURL_BIN     Indicate the curl bin path to use. Default is `curl`
                           from current shell $PATH.
-    HTTPSTAT_DEBUG        Set to `true` to see debugging logs. Default is `false`
   """
   echo help
 
@@ -135,6 +134,13 @@ proc main(): int =
     echo "httpstat $1" % [VERSION]
     quit(0)
 
+  let
+    show_body = if getEnv("HTTPSTAT_SHOW_BODY") == "": "false" else: getEnv("HTTPSTAT_SHOW_BODY")
+    show_ip = if getEnv("HTTPSTAT_SHOW_IP") == "": "true" else: getEnv("HTTPSTAT_SHOW_IP")
+    show_speed = if getEnv("HTTPSTAT_SHOW_SPEED") == "": "false" else: getEnv("HTTPSTAT_SHOW_SPEED")
+    save_body = if getEnv("HTTPSTAT_SAVE_BODY") == "": "true" else: getEnv("HTTPSTAT_SAVE_BODY")
+    curl_bin = if getEnv("HTTPSTAT_CURL_BIN") == "": "curl" else: getEnv("HTTPSTAT_CURL_BIN")
+
   # https://nim-lang.org/docs/future.html
   # py: [argv[i] for i in range(1, paramCount())]
   let curl_args = lc[argv[x] | (x <- 1..(paramCount() - 1)), string].join(" ")
@@ -158,7 +164,6 @@ proc main(): int =
   # https://www.tutorialspoint.com/c_standard_library/c_function_setlocale.htm
   # https://nim-lang.org/docs/posix.html
   discard setlocale(LC_ALL, "C")
-  let curl_bin = "curl"  # test
   let 
     cmd_core = @[curl_bin, "-w", curl_format, "-D", headerf, "-o", bodyf, "-s", "-S"]
     cmd = concat(cmd_core, @[curl_args, url])
@@ -193,8 +198,7 @@ proc main(): int =
   d["range_transfer"] = $(d["time_total"].parseInt() - d["time_starttransfer"].parseInt())
 
   # ip
-  let show_ip = true  # test
-  if show_ip:
+  if show_ip == "true":
     let s = "Connected to $1:$2 from $3:$4" % [
       cyan(d["remote_ip"]), cyan(d["remote_port"]),
       cyan(d["local_ip"]), cyan(d["local_port"]),
@@ -220,12 +224,9 @@ proc main(): int =
           pos = header.find(":")
         echo grayscale(14, header[0..pos]) & cyan(header[(pos + 1)..len(header)])
 
-  let  # test
-    show_body = false
-    save_body = false
   block body_block:
-    if not show_body:
-      if save_body:
+    if show_body != "true":
+      if save_body == "true":
         echo "$1 stored in: $2" % [green("Body"), bodyf]
       break body_block
 
@@ -233,7 +234,7 @@ proc main(): int =
     let f: File = open(bodyf, FileMode.fmRead)
     defer:
       f.close()
-      if not save_body:
+      if save_body != "true":
         removeFile(bodyf)  # remove body tmp file
     
     let
@@ -242,7 +243,7 @@ proc main(): int =
     if body_len > body_limit:
       echo body[0..(body_limit - 1)] & cyan("..."), "\n"
       var s = "$1 is truncated ($2 out of $3)" % [green("Body"), $body_limit, $body_len]
-      if save_body:
+      if save_body == "true":
         s.add(", stored in: {}" % [bodyf])
       echo s
     else:
@@ -276,12 +277,6 @@ proc main(): int =
 
   echo "\n", stat
 
-#  let show_speed = true  # test
-#  if show_speed:
-#    echo "speed_download: $1 KiB/s, speed_upload: $2 KiB/s" % [
-#      d["speed_download"].parseInt() div 1024, d["speed_upload"].parseInt() div 1024]
 
 if isMainModule:
-  #echo make_color(32)("okinawa")
-  #echo_help()
   discard main()
