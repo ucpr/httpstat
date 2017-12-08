@@ -12,12 +12,12 @@ const
   HTTPS_TEMPLATE = """
     DNS Lookup   TCP Connection   TLS Handshake   Server Processing   Content Transfer
   [  $1  |    $2    |   $3    |     $4      |     $5     ]
-               |                |               |                   |                  |
-      namelookup:$6        |               |                   |                  |
-                          connect:$7       |                   |                  |
-                                      pretransfer:$8           |                  |
-                                                        starttransfer:$9          |
-                                                                                  total:$10
+              |               |              |                  |                 |
+     namelookup:$6       |              |                  |                 |
+                      connect:$7        |                  |                 |
+                                    pretransfer:$8         |                 |
+                                                     starttransfer:$9        |
+                                                                           total:$10
   """
   HTTP_TEMPLATE = """
     DNS Lookup   TCP Connection   Server Processing   Content Transfer
@@ -79,6 +79,21 @@ proc random_str(size: int): string =
   result = ""  # return result
   for i in countup(0, size):
     result &= words[random(61)]  # len(words) == 62
+
+proc format_str(s: string, size: int, mode: char): string =
+  # py: {:^7}.format("hoge")
+  # py: {:<7}.format("hoge")
+  # py: {:>7}.format("hoge")
+  let length = size - len(s)
+  if mode == '^':
+    let 
+      left = length div 2
+      right = length - left
+    result = repeat(' ', left) & s & repeat(' ', right)
+  elif mode == '<':
+    result = s & repeat(' ', length)
+  elif mode == '>':
+    result = repeat(' ', length) & s
 
 proc make_color(code: string): proc =
   proc color_func(s: string): string =
@@ -206,7 +221,7 @@ proc main(): int =
         echo grayscale(14, header[0..pos]) & cyan(header[(pos + 1)..len(header)])
 
   let  # test
-    show_body = true
+    show_body = false
     save_body = false
   block body_block:
     if not show_body:
@@ -233,6 +248,38 @@ proc main(): int =
     else:
       echo body
 
+    echo HTTP_TEMPLATE.split("\n")
+
+  # colorize template
+  var tmp = (if url.startsWith("https://"): HTTPS_TEMPLATE else: HTTP_TEMPLATE)
+  tmp = tmp[1..len(tmp)-1]
+
+  var tpl_parts: seq[string] = tmp.split("\n")
+  tpl_parts[0] = grayscale(16, tpl_parts[0])
+  var templ: string = tpl_parts.join("\n")
+  
+  proc fmta(s: string): string =
+    return cyan(format_str(s & "ms", 7, '^'))
+
+  proc fmtb(s: string): string =
+    return cyan(format_str(s & "ms", 7, '<'))
+
+  let stat = templ % [
+    fmta(d["range_dns"]), fmta(d["range_connection"]),
+    fmta(d["range_ssl"]), fmta(d["range_server"]),
+    fmta(d["range_transfer"]),
+
+    fmtb(d["time_namelookup"]), fmtb(d["time_connect"]),
+    fmtb(d["time_pretransfer"]), fmtb(d["time_starttransfer"]),
+    fmtb(d["time_total"])
+  ]
+
+  echo "\n", stat
+
+#  let show_speed = true  # test
+#  if show_speed:
+#    echo "speed_download: $1 KiB/s, speed_upload: $2 KiB/s" % [
+#      d["speed_download"].parseInt() div 1024, d["speed_upload"].parseInt() div 1024]
 
 if isMainModule:
   #echo make_color(32)("okinawa")
