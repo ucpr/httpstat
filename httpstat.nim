@@ -7,7 +7,7 @@ import sequtils
 
 randomize()
 
-const VERSION = "0.0.1"
+const VERSION = "0.1.0"
 const
   HTTPS_TEMPLATE = """
     DNS Lookup   TCP Connection   TLS Handshake   Server Processing   Content Transfer
