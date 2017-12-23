@@ -2,7 +2,7 @@ import tables, json
 import random, future
 import terminal, times
 import os, ospaths, osproc, posix
-import strutils, pegs, unicode
+import strutils, re
 import sequtils
 
 randomize()
@@ -118,6 +118,13 @@ let
   bold = make_color("1")
   underline = make_color("4")
 
+proc parseoutput(s: string): string = 
+  let pattern = re"""\"\w*\":\s?\D?[0-9].*\D?\s?"""
+  result = "{"
+  for i in s.findAll(pattern):
+    result &= i
+  result &= "}"
+
 
 proc main(): int =
   if paramCount() == 0:
@@ -181,7 +188,7 @@ proc main(): int =
     quit(p.exitCode)
 
   # parse output(json)
-  let p_json: JsonNode = parseJson(p.output)
+  let p_json: JsonNode = parseJson(parseoutput(p.output))
   
   var d = initTable[string, string]()
   for key, value in p_json:
