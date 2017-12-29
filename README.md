@@ -35,6 +35,14 @@ $ ./httpstat --help
 $ httpstat https://nim-lang.org/
 ```
 
+## Implementation
+- https://github.com/reorx/httpstat
+- https://github.com/davecheney/httpstat
+- https://github.com/yosuke-furukawa/httpstat
+- https://github.com/tcnksm/go-httpstat
+- https://github.com/b4b4r07/httpstat
+- https://github.com/upamune/httpstat
+
 ## Author
 taichi uchihara (@u_chi_ha_ra_)
 
