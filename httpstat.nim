@@ -284,6 +284,9 @@ proc main(): int =
 
   echo "\n", stat
 
+  if show_speed == "true":
+    echo "speed_download: $1 KiB/s, speed_upload: $2 KiB/s" % [d["speed_download"], d["speed_upload"]]
+
 
 if isMainModule:
   discard main()
