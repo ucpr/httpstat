@@ -2,6 +2,16 @@
 
 ![image](Screenshot.png "image")
 
+## Build
+```
+nimble build
+```
+
+## Install
+```
+nimble install
+```
+
 ## Usage
 ```
 $ ./httpstat --help
