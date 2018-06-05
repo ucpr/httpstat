@@ -79,21 +79,6 @@ proc random_str(size: int): string =
   for i in countup(0, size):
     result &= words[random(61)]  # len(words) == 62
 
-proc format_str(s: string, size: int, mode: char): string =
-  # py: {:^7}.format("hoge")
-  # py: {:<7}.format("hoge")
-  # py: {:>7}.format("hoge")
-  let length = size - len(s)
-  if mode == '^':
-    let 
-      left = length div 2
-      right = length - left
-    result = repeat(' ', left) & s & repeat(' ', right)
-  elif mode == '<':
-    result = s & repeat(' ', length)
-  elif mode == '>':
-    result = repeat(' ', length) & s
-
 proc make_color(code: string): proc =
   proc color_func(s: string): string =
     if not isatty(stdout):  # https://nim-lang.org/docs/terminal.html
@@ -118,7 +103,7 @@ let
   bold = make_color("1")
   underline = make_color("4")
 
-proc parseoutput(s: string): string = 
+proc parseoutput(s: string): string =
   let pattern = re"""\"\w*\":\s?\D?[0-9].*\D?\s?"""
   result = "{"
   for i in s.findAll(pattern):
@@ -267,10 +252,10 @@ proc main(): int =
   var templ: string = tpl_parts.join("\n")
   
   proc fmta(s: string): string =
-    return cyan(format_str(s & "ms", 7, '^'))
+    return cyan(center(s & "ms", 7))
 
   proc fmtb(s: string): string =
-    return cyan(format_str(s & "ms", 7, '<'))
+    return cyan(alignLeft(s & "ms", 7))
 
   let stat = templ % [
     fmta(d["range_dns"]), fmta(d["range_connection"]),
@@ -286,7 +271,6 @@ proc main(): int =
 
   if show_speed == "true":
     echo "speed_download: $1 KiB/s, speed_upload: $2 KiB/s" % [d["speed_download"], d["speed_upload"]]
-
 
 if isMainModule:
   discard main()
