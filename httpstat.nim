@@ -7,9 +7,10 @@ import sequtils
 
 randomize()
 
-const VERSION = "0.1.2"
 const
-  HTTPS_TEMPLATE = """
+  Version = "0.1.2"
+  
+  HttpsTemplate = """
     DNS Lookup   TCP Connection   TLS Handshake   Server Processing   Content Transfer
   [  $1   |    $2     |    $3    |      $4      |     $5     ]
                |                |               |                   |                 |
@@ -19,7 +20,7 @@ const
                                                        starttransfer:$9          |
                                                                                  total:$10
   """
-  HTTP_TEMPLATE = """
+  HttpTemplate = """
     DNS Lookup   TCP Connection   Server Processing   Content Transfer
   [  $1   |   $2      |     $4       |     $5      ]
                |                |                   |                  |
@@ -29,24 +30,24 @@ const
                                                                   total:$10
   """
 
-const curl_format = """'{
-  "time_namelookup": %{time_namelookup},
-  "time_connect": %{time_connect},
-  "time_appconnect": %{time_appconnect},
-  "time_pretransfer": %{time_pretransfer},
-  "time_redirect": %{time_redirect},
-  "time_starttransfer": %{time_starttransfer},
-  "time_total": %{time_total},
-  "speed_download": %{speed_download},
-  "speed_upload": %{speed_upload},
-  "remote_ip": "%{remote_ip}",
-  "remote_port": "%{remote_port}",
-  "local_ip": "%{local_ip}",
-  "local_port": "%{local_port}"
-}'"""
+  CurlFormat = """'{
+    "time_namelookup": %{time_namelookup},
+    "time_connect": %{time_connect},
+    "time_appconnect": %{time_appconnect},
+    "time_pretransfer": %{time_pretransfer},
+    "time_redirect": %{time_redirect},
+    "time_starttransfer": %{time_starttransfer},
+    "time_total": %{time_total},
+    "speed_download": %{speed_download},
+    "speed_upload": %{speed_upload},
+    "remote_ip": "%{remote_ip}",
+    "remote_port": "%{remote_port}",
+    "local_ip": "%{local_ip}",
+    "local_port": "%{local_port}"
+  }'"""
 
 
-proc echo_help(): int {. discardable .} =
+proc echoHelp(): int {. discardable .} =
   var help: string = """
   Usage: httpstat URL [CURL_OPTIONS]
          httpstat -h | --help
@@ -73,37 +74,37 @@ proc echo_help(): int {. discardable .} =
   """
   echo help
 
-proc random_str(size: int): string =
+proc randomStr(size: int): string =
   let words = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   result = ""  # return result
   for i in countup(0, size):
     result &= words[random(61)]  # len(words) == 62
 
-proc make_color(code: string): proc =
-  proc color_func(s: string): string =
+proc makeColor(code: string): proc =
+  proc colorProc(s: string): string =
     if not isatty(stdout):  # https://nim-lang.org/docs/terminal.html
       return s
     var tpl: string = "\x1b[$1m$2\x1b[0m"
 
     return tpl % [code, s]
-  return color_func
+  return colorProc
 
-proc grayscale(i: int, s: string): string =
+proc grayScale(i: int, s: string): string =
   var code: int = 232 + i
-  return  make_color("38;5;" & $code)(s)
+  return  makeColor("38;5;" & $code)(s)
 
 let
-  red = make_color("31")
-  green = make_color("32")
-  yellow = make_color("33")
-  blue = make_color("34")
-  magenta = make_color("35")
-  cyan = make_color("36")
+  red = makeColor("31")
+  green = makeColor("32")
+  yellow = makeColor("33")
+  blue = makeColor("34")
+  magenta = makeColor("35")
+  cyan = makeColor("36")
 
-  bold = make_color("1")
-  underline = make_color("4")
+  bold = makeColor("1")
+  underline = makeColor("4")
 
-proc parseoutput(s: string): string =
+proc parseOutput(s: string): string =
   let pattern = re"""\"\w*\":\s?\D?[0-9].*\D?\s?"""
   result = "{"
   for i in s.findAll(pattern):
@@ -111,19 +112,19 @@ proc parseoutput(s: string): string =
   result &= "}"
 
 
-proc main(): int =
+proc main() =
   if paramCount() == 0:
-    echo_help()
+    echoHelp()
     quit(0)
 
   var argv: seq[string] = commandLineParams()
 
   let url = argv[0]
   if url in ["-h", "--help"]:
-    echo_help()
+    echoHelp()
     quit(0)
   elif url in ["-v", "--version"]:
-    echo "httpstat $1" % [VERSION]
+    echo "httpstat $1" % [Version]
     quit(0)
 
   let
@@ -150,14 +151,14 @@ proc main(): int =
       quit(1)
 
   let
-    bodyf = "/tmp/httpstatbody-" & getDateStr() & random_str(8) & getClockStr()
-    headerf = "/tmp/httpstatheader-" & getDateStr() & random_str(8) &  getClockStr()
+    bodyf = "/tmp/httpstatbody-" & getDateStr() & randomStr(8) & getClockStr()
+    headerf = "/tmp/httpstatheader-" & getDateStr() & randomStr(8) &  getClockStr()
 
   # https://www.tutorialspoint.com/c_standard_library/c_function_setlocale.htm
   # https://nim-lang.org/docs/posix.html
   discard setlocale(LC_ALL, "C")
   let 
-    cmd_core = @[curl_bin, "-w", curl_format, "-D", headerf, "-o", bodyf, "-s", "-S"]
+    cmd_core = @[curl_bin, "-w", CurlFormat, "-D", headerf, "-o", bodyf, "-s", "-S"]
     cmd = concat(cmd_core, @[curl_args, url])
 
   let p = execCmdEx(cmd.join(" "))  # tuple[output, exitCode]
@@ -173,7 +174,7 @@ proc main(): int =
     quit(p.exitCode)
 
   # parse output(json)
-  let p_json: JsonNode = parseJson(parseoutput(p.output))
+  let p_json: JsonNode = parseJson(parseOutput(p.output))
   
   var d = initTable[string, string]()
   for key, value in p_json:
@@ -208,13 +209,13 @@ proc main(): int =
     while f.endOfFile == false:
       if loop == 0:
         let header = f.readLine().split("/")
-        echo green(header[0]) & grayscale(14, "/") & cyan(header[1])
+        echo green(header[0]) & grayScale(14, "/") & cyan(header[1])
         inc(loop)
       else:
         let 
           header = f.readLine()
           pos = header.find(":")
-        echo grayscale(14, header[0..pos]) & cyan(header[(pos + 1)..len(header)])
+        echo grayScale(14, header[0..pos]) & cyan(header[(pos + 1)..len(header)])
 
   block body_block:
     if show_body != "true":
@@ -241,14 +242,14 @@ proc main(): int =
     else:
       echo body
 
-    echo HTTP_TEMPLATE.split("\n")
+    echo HttpTemplate.split("\n")
 
   # colorize template
-  var tmp = (if url.startsWith("https://"): HTTPS_TEMPLATE else: HTTP_TEMPLATE)
+  var tmp = (if url.startsWith("https://"): HttpsTemplate else: HttpTemplate)
   tmp = tmp[1..len(tmp)-1]
 
   var tpl_parts: seq[string] = tmp.split("\n")
-  tpl_parts[0] = grayscale(16, tpl_parts[0])
+  tpl_parts[0] = grayScale(16, tpl_parts[0])
   var templ: string = tpl_parts.join("\n")
   
   proc fmta(s: string): string =
@@ -273,4 +274,4 @@ proc main(): int =
     echo "speed_download: $1 KiB/s, speed_upload: $2 KiB/s" % [d["speed_download"], d["speed_upload"]]
 
 if isMainModule:
-  discard main()
+  main()
