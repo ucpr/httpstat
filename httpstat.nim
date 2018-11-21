@@ -119,6 +119,7 @@ proc main() =
 
   var argv: seq[string] = commandLineParams()
 
+  echo argv
   let url = argv[0]
   if url in ["-h", "--help"]:
     echoHelp()
@@ -128,25 +129,25 @@ proc main() =
     quit(0)
 
   let
-    show_body = if getEnv("HTTPSTAT_SHOW_BODY") == "": "false" else: getEnv("HTTPSTAT_SHOW_BODY")
-    show_ip = if getEnv("HTTPSTAT_SHOW_IP") == "": "true" else: getEnv("HTTPSTAT_SHOW_IP")
-    show_speed = if getEnv("HTTPSTAT_SHOW_SPEED") == "": "false" else: getEnv("HTTPSTAT_SHOW_SPEED")
-    save_body = if getEnv("HTTPSTAT_SAVE_BODY") == "": "true" else: getEnv("HTTPSTAT_SAVE_BODY")
-    curl_bin = if getEnv("HTTPSTAT_CURL_BIN") == "": "curl" else: getEnv("HTTPSTAT_CURL_BIN")
+    showBody = if getEnv("HTTPSTAT_SHOW_BODY") == "": "false" else: getEnv("HTTPSTAT_SHOW_BODY")
+    showIp = if getEnv("HTTPSTAT_SHOW_IP") == "": "true" else: getEnv("HTTPSTAT_SHOW_IP")
+    showSpeed = if getEnv("HTTPSTAT_SHOW_SPEED") == "": "false" else: getEnv("HTTPSTAT_SHOW_SPEED")
+    saveBody = if getEnv("HTTPSTAT_SAVE_BODY") == "": "true" else: getEnv("HTTPSTAT_SAVE_BODY")
+    curlBin = if getEnv("HTTPSTAT_CURL_BIN") == "": "curl" else: getEnv("HTTPSTAT_CURL_BIN")
 
   # https://nim-lang.org/docs/future.html
   # py: [argv[i] for i in range(1, paramCount())]
-  let curl_args = lc[argv[x] | (x <- 1..(paramCount() - 1)), string].join(" ")
+  let curlArgs = lc[argv[x] | (x <- 1..(paramCount() - 1)), string].join(" ")
 
   # check curl args
-  var exclude_options = @[
+  var excludeOptions = @[
     "-w", "--write-out",
     "-D", "--dump-header",
     "-o", "--output",
     "-s", "--silent"
   ]
-  for i in exclude_options:
-    if i in curl_args:
+  for i in excludeOptions:
+    if i in curlArgs:
       echo yellow("Error: $1 is not allowed in extra curl args" % [i])
       quit(1)
 
@@ -158,8 +159,8 @@ proc main() =
   # https://nim-lang.org/docs/posix.html
   discard setlocale(LC_ALL, "C")
   let 
-    cmd_core = @[curl_bin, "-w", CurlFormat, "-D", headerf, "-o", bodyf, "-s", "-S"]
-    cmd = concat(cmd_core, @[curl_args, url])
+    cmdCore = @[curlBin, "-w", CurlFormat, "-D", headerf, "-o", bodyf, "-s", "-S"]
+    cmd = concat(cmdCore, @[curlArgs, url])
 
   let p = execCmdEx(cmd.join(" "))  # tuple[output, exitCode]
   
@@ -174,12 +175,12 @@ proc main() =
     quit(p.exitCode)
 
   # parse output(json)
-  let p_json: JsonNode = parseJson(parseOutput(p.output))
+  let pJson: JsonNode = parseJson(parseOutput(p.output))
   
   var d = initTable[string, string]()
-  for key, value in p_json:
+  for key, value in pJson:
     if startsWith(key, "time_"):
-      d[key] = $int(p_json[key].getFNum() * 1000)
+      d[key] = $int(pJson[key].getFNum() * 1000)
     else:
       d[key] = $value
 
@@ -191,7 +192,7 @@ proc main() =
   d["range_transfer"] = $(d["time_total"].parseInt() - d["time_starttransfer"].parseInt())
 
   # ip
-  if show_ip == "true":
+  if showIp == "true":
     let s = "Connected to $1:$2 from $3:$4" % [
       cyan(d["remote_ip"]), cyan(d["remote_port"]),
       cyan(d["local_ip"]), cyan(d["local_port"]),
@@ -199,7 +200,7 @@ proc main() =
     echo s, "\n"
 
   # print header & body summary
-  block header_block:
+  block headerBlock:
     let f: File = open(headerf, FileMode.fmRead)
     defer:
       f.close()
@@ -212,31 +213,31 @@ proc main() =
         echo green(header[0]) & grayScale(14, "/") & cyan(header[1])
         inc(loop)
       else:
-        let 
+        let
           header = f.readLine()
           pos = header.find(":")
         echo grayScale(14, header[0..pos]) & cyan(header[(pos + 1)..len(header)])
 
-  block body_block:
-    if show_body != "true":
-      if save_body == "true":
+  block bodyBlock:
+    if showBody != "true":
+      if saveBody == "true":
         echo "$1 stored in: $2" % [green("Body"), bodyf]
-      break body_block
+      break bodyBlock
 
-    const body_limit = 1024
+    const bodyLimit = 1024
     let f: File = open(bodyf, FileMode.fmRead)
     defer:
       f.close()
-      if save_body != "true":
+      if saveBody != "true":
         removeFile(bodyf)  # remove body tmp file
     
     let
       body = f.readAll()
-      body_len = len(body)
-    if body_len > body_limit:
-      echo body[0..(body_limit - 1)] & cyan("..."), "\n"
-      var s = "$1 is truncated ($2 out of $3)" % [green("Body"), $body_limit, $body_len]
-      if save_body == "true":
+      bodyLength = len(body)
+    if bodyLength > bodyLimit:
+      echo body[0..(bodyLimit - 1)] & cyan("..."), "\n"
+      var s = "$1 is truncated ($2 out of $3)" % [green("Body"), $bodyLimit, $bodyLength]
+      if saveBody == "true":
         s.add(", stored in: {}" % [bodyf])
       echo s
     else:
@@ -248,9 +249,9 @@ proc main() =
   var tmp = (if url.startsWith("https://"): HttpsTemplate else: HttpTemplate)
   tmp = tmp[1..len(tmp)-1]
 
-  var tpl_parts: seq[string] = tmp.split("\n")
-  tpl_parts[0] = grayScale(16, tpl_parts[0])
-  var templ: string = tpl_parts.join("\n")
+  var tplParts: seq[string] = tmp.split("\n")
+  tplParts[0] = grayScale(16, tplParts[0])
+  var templ: string = tplParts.join("\n")
   
   proc fmta(s: string): string =
     return cyan(center(s & "ms", 7))
@@ -270,7 +271,7 @@ proc main() =
 
   echo "\n", stat
 
-  if show_speed == "true":
+  if showSpeed == "true":
     echo "speed_download: $1 KiB/s, speed_upload: $2 KiB/s" % [d["speed_download"], d["speed_upload"]]
 
 if isMainModule:
