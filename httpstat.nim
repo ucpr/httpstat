@@ -111,7 +111,6 @@ proc parseOutput(s: string): string =
     result &= i
   result &= "}"
 
-
 proc main() =
   if paramCount() == 0:
     echoHelp()
@@ -119,7 +118,6 @@ proc main() =
 
   var argv: seq[string] = commandLineParams()
 
-  echo argv
   let url = argv[0]
   if url in ["-h", "--help"]:
     echoHelp()
@@ -216,7 +214,7 @@ proc main() =
         let
           header = f.readLine()
           pos = header.find(":")
-        echo grayScale(14, header[0..pos]) & cyan(header[(pos + 1)..len(header)])
+        echo grayScale(14, header[0..pos]) & cyan(header[(pos + 1)..(len(header) - 1)])
 
   block bodyBlock:
     if showBody != "true":
