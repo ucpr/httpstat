@@ -1,5 +1,7 @@
 # httpstat
 
+[![Build Status](https://travis-ci.com/nve3pd/httpstat.svg?branch=master)](https://travis-ci.com/nve3pd/httpstat)
+
 ![image](Screenshot.png "image")
 
 ## Build
