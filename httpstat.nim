@@ -1,5 +1,5 @@
 import tables, json
-import random, future
+import random, sugar
 import terminal, times
 import os, ospaths, osproc, posix
 import strutils, re
