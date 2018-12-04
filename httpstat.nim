@@ -10,7 +10,7 @@ randomize()
 const
   Version = "0.1.2"
   
-  HttpsTemplate = """
+  httpsTemplate = """
     DNS Lookup   TCP Connection   TLS Handshake   Server Processing   Content Transfer
   [  $1   |    $2     |    $3    |      $4      |     $5     ]
                |                |               |                   |                 |
@@ -20,7 +20,7 @@ const
                                                        starttransfer:$9          |
                                                                                  total:$10
   """
-  HttpTemplate = """
+  httpTemplate = """
     DNS Lookup   TCP Connection   Server Processing   Content Transfer
   [  $1   |   $2      |     $4       |     $5      ]
                |                |                   |                  |
@@ -30,7 +30,7 @@ const
                                                                   total:$10
   """
 
-  CurlFormat = """'{
+  curlFormat = """'{
     "time_namelookup": %{time_namelookup},
     "time_connect": %{time_connect},
     "time_appconnect": %{time_appconnect},
@@ -45,7 +45,6 @@ const
     "local_ip": "%{local_ip}",
     "local_port": "%{local_port}"
   }'"""
-
 
 proc echoHelp(): int {. discardable .} =
   var help: string = """
@@ -157,7 +156,7 @@ proc main() =
   # https://nim-lang.org/docs/posix.html
   discard setlocale(LC_ALL, "C")
   let 
-    cmdCore = @[curlBin, "-w", CurlFormat, "-D", headerf, "-o", bodyf, "-s", "-S"]
+    cmdCore = @[curlBin, "-w", curlFormat, "-D", headerf, "-o", bodyf, "-s", "-S"]
     cmd = concat(cmdCore, @[curlArgs, url])
 
   let p = execCmdEx(cmd.join(" "))  # tuple[output, exitCode]
@@ -241,10 +240,10 @@ proc main() =
     else:
       echo body
 
-    echo HttpTemplate.split("\n")
+    echo httpTemplate.split("\n")
 
   # colorize template
-  var tmp = (if url.startsWith("https://"): HttpsTemplate else: HttpTemplate)
+  var tmp = (if url.startsWith("https://"): httpsTemplate else: httpTemplate)
   tmp = tmp[1..len(tmp)-1]
 
   var tplParts: seq[string] = tmp.split("\n")
