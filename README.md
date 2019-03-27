@@ -1,6 +1,6 @@
 # httpstat
 
-[![Build Status](https://travis-ci.com/nve3pd/httpstat.svg?branch=master)](https://travis-ci.com/nve3pd/httpstat)
+[![Build Status](https://travis-ci.com/ucpr/httpstat.svg?branch=master)](https://travis-ci.com/ucpr/httpstat)
 
 ![image](Screenshot.png "image")
 
