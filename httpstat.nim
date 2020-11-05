@@ -46,7 +46,7 @@ const
     "local_port": "%{local_port}"
   }'"""
 
-proc echoHelp(): int {. discardable .} =
+proc showHelp(): int {. discardable .} =
   var help: string = """
   Usage: httpstat URL [CURL_OPTIONS]
          httpstat -h | --help
@@ -73,7 +73,7 @@ proc echoHelp(): int {. discardable .} =
   """
   echo help
 
-proc randomStr(size: int): string =
+proc getRandomStr(size: int): string =
   let words = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   result = ""  # return result
   for i in countup(0, size):
@@ -112,14 +112,14 @@ proc parseOutput(s: string): string =
 
 proc main() =
   if paramCount() == 0:
-    echoHelp()
+    showHelp()
     quit(0)
 
   var argv: seq[string] = commandLineParams()
 
   let url = argv[0]
   if url in ["-h", "--help"]:
-    echoHelp()
+    showHelp()
     quit(0)
   elif url in ["-v", "--version"]:
     echo "httpstat $1" % [Version]
@@ -149,8 +149,8 @@ proc main() =
       quit(1)
 
   let
-    bodyf = "/tmp/httpstatbody-" & getDateStr() & randomStr(8) & getClockStr()
-    headerf = "/tmp/httpstatheader-" & getDateStr() & randomStr(8) &  getClockStr()
+    bodyf = "/tmp/httpstatbody-" & getDateStr() & getRandomStr(8) & getClockStr()
+    headerf = "/tmp/httpstatheader-" & getDateStr() & getRandomStr(8) &  getClockStr()
 
   # https://www.tutorialspoint.com/c_standard_library/c_function_setlocale.htm
   # https://nim-lang.org/docs/posix.html
