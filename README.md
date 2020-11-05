@@ -4,6 +4,9 @@
 
 ![image](Screenshot.png "image")
 
+## Requirements
+- curl
+
 ## Build
 ```
 nimble build
