@@ -9,7 +9,7 @@ randomize()
 
 const
   Version = "0.1.2"
-  
+
   httpsTemplate = """
     DNS Lookup   TCP Connection   TLS Handshake   Server Processing   Content Transfer
   [  $1   |    $2     |    $3    |      $4      |     $5     ]
@@ -155,12 +155,12 @@ proc main() =
   # https://www.tutorialspoint.com/c_standard_library/c_function_setlocale.htm
   # https://nim-lang.org/docs/posix.html
   discard setlocale(LC_ALL, "C")
-  let 
+  let
     cmdCore = @[curlBin, "-w", curlFormat, "-D", headerf, "-o", bodyf, "-s", "-S"]
     cmd = concat(cmdCore, @[curlArgs, url])
 
   let p = execCmdEx(cmd.join(" "))  # tuple[output, exitCode]
-  
+
   # print stderr
   if p.exitCode != 0:
     var msg = cmd
@@ -173,7 +173,7 @@ proc main() =
 
   # parse output(json)
   let pJson: JsonNode = parseJson(parseOutput(p.output))
-  
+
   var d = initTable[string, string]()
   for key, value in pJson:
     if startsWith(key, "time_"):
@@ -227,7 +227,7 @@ proc main() =
       f.close()
       if saveBody != "true":
         removeFile(bodyf)  # remove body tmp file
-    
+
     let
       body = f.readAll()
       bodyLength = len(body)
@@ -249,7 +249,7 @@ proc main() =
   var tplParts: seq[string] = tmp.split("\n")
   tplParts[0] = grayScale(16, tplParts[0])
   var templ: string = tplParts.join("\n")
-  
+
   proc fmta(s: string): string =
     return cyan(center(s & "ms", 7))
 
