@@ -1,6 +1,0 @@
-sudo: false
-language: c
-service:
-  - docker
-script:
-  docker build -t httpstat .
