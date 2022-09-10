@@ -1,7 +1,7 @@
 import tables, json
-import random, sugar
+import std/random, sugar
 import terminal, times
-import os, ospaths, osproc, posix
+import std/os, osproc, posix
 import strutils, re
 import sequtils
 
@@ -77,7 +77,7 @@ proc getRandomStr(size: int): string =
   let words = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   result = ""  # return result
   for i in countup(0, size):
-    result &= words[random(61)]  # len(words) == 62
+    result &= words[rand(61)]  # len(words) == 62
 
 proc makeColor(code: string): proc =
   proc colorProc(s: string): string =
@@ -132,9 +132,9 @@ proc main() =
     saveBody = if getEnv("HTTPSTAT_SAVE_BODY") == "": "true" else: getEnv("HTTPSTAT_SAVE_BODY")
     curlBin = if getEnv("HTTPSTAT_CURL_BIN") == "": "curl" else: getEnv("HTTPSTAT_CURL_BIN")
 
-  # https://nim-lang.org/docs/future.html
-  # py: [argv[i] for i in range(1, paramCount())]
-  let curlArgs = lc[argv[x] | (x <- 1..(paramCount() - 1)), string].join(" ")
+  let curlArgs = collect(newSeq):
+    for i in 1..(paramCount()-1):
+      argv[i]
 
   # check curl args
   var excludeOptions = @[
@@ -157,7 +157,7 @@ proc main() =
   discard setlocale(LC_ALL, "C")
   let
     cmdCore = @[curlBin, "-w", curlFormat, "-D", headerf, "-o", bodyf, "-s", "-S"]
-    cmd = concat(cmdCore, @[curlArgs, url])
+    cmd = concat(cmdCore, @[curlArgs.join(" "), url])
 
   let p = execCmdEx(cmd.join(" "))  # tuple[output, exitCode]
 
@@ -177,7 +177,7 @@ proc main() =
   var d = initTable[string, string]()
   for key, value in pJson:
     if startsWith(key, "time_"):
-      d[key] = $int(pJson[key].getFNum() * 1000)
+      d[key] = $int(pJson[key].getFloat() * 1000)
     else:
       d[key] = $value
 
