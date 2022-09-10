@@ -1,6 +1,6 @@
 # httpstat
 
-[![Build Status](https://travis-ci.com/ucpr/httpstat.svg?branch=master)](https://travis-ci.com/ucpr/httpstat)
+[![Build Status](https://github.com/ucpr/httpstat/actions/workflows/build-and-test.yaml/badge.svg)](https://github.com/ucpr/httpstat/actions/workflows/build-and-test.yaml)
 
 ![image](Screenshot.png "image")
 
