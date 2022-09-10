@@ -1,0 +1,26 @@
+name: build-and-test
+
+on: push
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        nim: [ '1.6.0', 'stable', 'devel' ]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3.0.2
+
+      - uses: jiro4989/setup-nim-action@v1.1.4
+        with:
+          nim-version: ${{ matrix.nim }}
+
+      - name: nimble build
+        run: |
+          nimble build
+
+      - name: nimble test
+        run: |
+          nimble test
