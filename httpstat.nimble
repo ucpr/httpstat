@@ -5,7 +5,7 @@ author        = "taichi uchihara"
 description   = "curl statistics made simple"
 license       = "MIT"
 srcDir        = "src"
-bin           = @["httpstat.nim"]
+bin           = @["httpstat"]
 
 # Dependencies
 
