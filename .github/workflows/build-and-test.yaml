@@ -6,7 +6,7 @@ jobs:
   build-and-test:
     strategy:
       matrix:
-        nim: [ '1.6.0', 'stable', 'devel' ]
+        nim: [ 'stable', 'devel' ]
 
     runs-on: ubuntu-latest
 
