@@ -93,15 +93,9 @@ proc grayScale(i: int, s: string): string =
   return  makeColor("38;5;" & $code)(s)
 
 let
-  red = makeColor("31")
   green = makeColor("32")
   yellow = makeColor("33")
-  blue = makeColor("34")
-  magenta = makeColor("35")
   cyan = makeColor("36")
-
-  bold = makeColor("1")
-  underline = makeColor("4")
 
 proc parseOutput(s: string): string =
   let pattern = re"""\"\w*\":\s?\D?[0-9].*\D?\s?"""
